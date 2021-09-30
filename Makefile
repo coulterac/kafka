@@ -1,6 +1,10 @@
 .DEFAULT_GOAL := all
 
 kafka:
-	docker-compose -f docker-compose.yml up -d --build --abort-on-container-exit --force-recreate
+	docker-compose -f docker-compose.yml up --build --abort-on-container-exit --force-recreate
 
-.PHONY: all kafka
+vendor:
+	go mod vendor
+	go mod tidy
+
+.PHONY: all kafka vendor
