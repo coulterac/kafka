@@ -27,12 +27,12 @@ func main() {
 	l.Log("level", "info", "msg", "starting producer")
 
 	producer, err := kafka.NewProducer(&kafka.ConfigMap{
-		"boostrap.servers":           "localhost",
-		"go.delivery.reports":        true,
-		"go.delivery.reports.fields": "all",
-		"go.events.channel.size":     1,
-		"go.produce.channel.size":    1,
-		"go.logs.channel.enable":     true,
+		"bootstrap.servers":         "localhost",
+		"go.delivery.reports":       true,
+		"go.delivery.report.fields": "all",
+		"go.events.channel.size":    1,
+		"go.produce.channel.size":   1,
+		"go.logs.channel.enable":    true,
 	})
 	if err != nil {
 		l.Log("level", "error", "msg", "could not create kafka producer", "err", err.Error())
@@ -71,22 +71,7 @@ func main() {
 		}
 	}()
 
-	for {
-		select {
-		case <-shutdown:
-			fmt.Printf("received shutdown\n")
-
-			// Stop our ticker
-			done <- struct{}{}
-
-			// Stop the producer
-			producer.Close()
-
-			// Flush any remaining messages for the producer
-			producer.Flush(5000)
-		}
-	}
-
+	// TODO: Gracefull shutdown
 }
 
 // Create a ticker to produce messages on an interval

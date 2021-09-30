@@ -1,1 +1,2 @@
-cmd/server/server
+cmd/producer/producer
+cmd/consumer/consumer
