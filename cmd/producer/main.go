@@ -38,7 +38,8 @@ func main() {
 		https://redventures.udemy.com/course/apache-kafka/learn/lecture/11567052#overview
 		https://issues.apache.org/jira/browse/KAFKA-5494
 		Using an idempotent producer provides emoves any possibility of duplicates caused
-		by network errors when acks from Kafka fail to be sent to the producer
+		by network errors when acks from Kafka fail to be sent to the producer while also
+		maintaining ordering with retries
 		Defaults:
 			retries=integer.MAX_VALUE (2^31-1 = 2147483647)
 			max.in.flight.requests=1 (Kafka == 0.11)
@@ -46,6 +47,18 @@ func main() {
 			acks=al
 		*/
 		"enable.idempotence": true,
+
+		/* Enable compression
+		To have a high throughput, low latency producer it is important to enable compression
+		and set to batching. Batches will send for when either of the above conditions are true.
+		NOTE: Any message that is bigger than the batch size will not be batched
+		Kafka has an avg batch size metric through Kafka Producer Metrics
+			"linger.ms" -- sets the max amount of time to wait before sending a batch
+			"batch.size" -- sets the max amount of data to buffer before sending a batch
+		*/
+		"compression.type": "snappy",
+		"linger.ms":        20,
+		"batch.size":       16, // Defaut is 16kb
 	})
 	if err != nil {
 		l.Log("level", "error", "msg", "could not create kafka producer", "err", err.Error())
