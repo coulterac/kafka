@@ -33,6 +33,19 @@ func main() {
 		"go.events.channel.size":    1,
 		"go.produce.channel.size":   1,
 		"go.logs.channel.enable":    true,
+
+		/* Enable the Idempotent Producer
+		https://redventures.udemy.com/course/apache-kafka/learn/lecture/11567052#overview
+		https://issues.apache.org/jira/browse/KAFKA-5494
+		Using an idempotent producer provides emoves any possibility of duplicates caused
+		by network errors when acks from Kafka fail to be sent to the producer
+		Defaults:
+			retries=integer.MAX_VALUE (2^31-1 = 2147483647)
+			max.in.flight.requests=1 (Kafka == 0.11)
+			max.in.flight.requests=5 (Kafka >= 1.0)
+			acks=al
+		*/
+		"enable.idempotence": true,
 	})
 	if err != nil {
 		l.Log("level", "error", "msg", "could not create kafka producer", "err", err.Error())
