@@ -33,6 +33,42 @@ func main() {
 		"go.events.channel.size":    1,
 		"go.produce.channel.size":   1,
 		"go.logs.channel.enable":    true,
+
+		/* Enable the Idempotent Producer
+		https://redventures.udemy.com/course/apache-kafka/learn/lecture/11567052#overview
+		https://issues.apache.org/jira/browse/KAFKA-5494
+		Using an idempotent producer provides emoves any possibility of duplicates caused
+		by network errors when acks from Kafka fail to be sent to the producer while also
+		maintaining ordering with retries
+		Defaults:
+			retries=integer.MAX_VALUE (2^31-1 = 2147483647)
+			max.in.flight.requests=1 (Kafka == 0.11)
+			max.in.flight.requests=5 (Kafka >= 1.0)
+			acks=al
+		*/
+		"enable.idempotence": true,
+
+		/* Enable compression
+		To have a high throughput, low latency producer it is important to enable compression
+		and set to batching. Batches will send for when either of the above conditions are true.
+		NOTE: Any message that is bigger than the batch size will not be batched
+		Kafka has an avg batch size metric through Kafka Producer Metrics
+			"linger.ms" -- sets the max amount of time to wait before sending a batch
+			"batch.size" -- sets the max amount of data to buffer before sending a batch
+		*/
+		// "compression.type": "snappy",
+		// "linger.ms":        20,
+		// "batch.size":       16, // Defaut is 16kb
+
+		/* Buffer memory
+		When a producer produces messages faster than the consumer can process, those messages
+		will buffer in memory. If the buffer is full, the msg.send() will block and is controlled
+		by max.block.ms and is the time to wait in ms before throwing an exception. max.block.ms
+		throws an exception when producer is filled up the buffer, broker not accepting new data or
+		60s elapsed.
+		*/
+		// "buffer.memory": 33554432 // 32mb and is the default
+		// "max.block.ms": 60000 // the time to way before throwing an exception when the buffer is full
 	})
 	if err != nil {
 		l.Log("level", "error", "msg", "could not create kafka producer", "err", err.Error())
@@ -72,6 +108,14 @@ func main() {
 	}()
 
 	// TODO: Gracefull shutdown
+	for {
+		select {
+		case <-shutdown:
+			done <- struct{}{}
+			producer.Close()
+
+		}
+	}
 }
 
 // Create a ticker to produce messages on an interval
