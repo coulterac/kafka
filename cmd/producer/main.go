@@ -56,9 +56,19 @@ func main() {
 			"linger.ms" -- sets the max amount of time to wait before sending a batch
 			"batch.size" -- sets the max amount of data to buffer before sending a batch
 		*/
-		"compression.type": "snappy",
-		"linger.ms":        20,
-		"batch.size":       16, // Defaut is 16kb
+		// "compression.type": "snappy",
+		// "linger.ms":        20,
+		// "batch.size":       16, // Defaut is 16kb
+
+		/* Buffer memory
+		When a producer produces messages faster than the consumer can process, those messages
+		will buffer in memory. If the buffer is full, the msg.send() will block and is controlled
+		by max.block.ms and is the time to wait in ms before throwing an exception. max.block.ms
+		throws an exception when producer is filled up the buffer, broker not accepting new data or
+		60s elapsed.
+		*/
+		// "buffer.memory": 33554432 // 32mb and is the default
+		// "max.block.ms": 60000 // the time to way before throwing an exception when the buffer is full
 	})
 	if err != nil {
 		l.Log("level", "error", "msg", "could not create kafka producer", "err", err.Error())
@@ -98,6 +108,14 @@ func main() {
 	}()
 
 	// TODO: Gracefull shutdown
+	for {
+		select {
+		case <-shutdown:
+			done <- struct{}{}
+			producer.Close()
+
+		}
+	}
 }
 
 // Create a ticker to produce messages on an interval
